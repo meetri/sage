@@ -5,6 +5,7 @@ package config
 */
 
 import (
+	//"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -72,6 +73,7 @@ func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 
 	extend := elem.Find("extends/file")
 	service := elem.Find("extends/service")
+	pathkey := elem.Find("extends/path")
 
 	env = make(Map)
 	for extend != nil {
@@ -87,16 +89,25 @@ func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 			}
 		}
 
+		var elempath Map
+		if pathkey == nil {
+			elempath = elem
+		} else {
+			elem[pathkey] = make(Map)
+			elempath = elem[pathkey].(Map)
+		}
+
 		if es != nil {
 			eservice := es.(Map)
+			eservice.Templatize(env)
 			for k, v := range eservice {
-				mergeMaps(false, eservice, elem, k, v)
+				mergeMaps(false, eservice, elempath, k, v)
 			}
-
 			mm.Templatize(env)
 
 			extend = eservice.Find("extends/file")
 			service = eservice.Find("extends/service")
+			pathkey = eservice.Find("extends/path")
 		} else {
 			panic("failed loading " + extend.(string) + "::" + service.(string))
 		}
