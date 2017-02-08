@@ -1,7 +1,7 @@
 package config
 
 /*
-	Parse YAML Config - ( supports Docker Compose Format )
+	Load nested YAML app configuration
 */
 
 import (
@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -35,6 +36,28 @@ func Load(fn string) (mm Map) {
 
 }
 
+//Templatize a NestedMaps object which replaces "${key}" with the value from env[key]
+func (mm Map) Templatize(env Map) {
+	reg := regexp.MustCompile("\\$\\{([^\\}]+)\\}")
+	for k, v := range mm {
+		if reflect.TypeOf(v).Kind() == reflect.String {
+			matches := reg.FindAllString(v.(string), -1)
+			for _, match := range matches {
+
+				envKey := strings.Replace(
+					strings.Replace(match, "}", "", 1), "${", "", 1)
+
+				if env[envKey] != nil {
+					newVal := env[envKey].(string)
+					mm[k] = strings.Replace(mm[k].(string), match, newVal, -1)
+				}
+			}
+		} else if reflect.TypeOf(v).Kind() == reflect.Map {
+			v.(Map).Templatize(env)
+		}
+	}
+}
+
 //Export YAML
 func (mm Map) Save() []byte {
 	out, _ := yaml.Marshal(mm)
@@ -42,21 +65,35 @@ func (mm Map) Save() []byte {
 	return out
 }
 
-//Expand config's extended files and services
-func (mm Map) Select(path string) Map {
+//Select and Expand config's extended files
+func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 
 	elem := mm.Find(path).(Map)
 
 	extend := elem.Find("extends/file")
 	service := elem.Find("extends/service")
 
+	env = make(Map)
 	for extend != nil {
-		es := Load(extend.(string)).Find(service.(string))
+
+		ex := Load(extend.(string))
+		es := ex.Find(service.(string))
+		if g := ex.Find("_env"); g == nil {
+			env = parentEnv
+		} else {
+			env = g.(Map)
+			for k, v := range parentEnv {
+				env[k] = v
+			}
+		}
+
 		if es != nil {
 			eservice := es.(Map)
 			for k, v := range eservice {
-				mergeKey(false, eservice, elem, k, v)
+				mergeMaps(false, eservice, elem, k, v)
 			}
+
+			mm.Templatize(env)
 
 			extend = eservice.Find("extends/file")
 			service = eservice.Find("extends/service")
@@ -65,17 +102,17 @@ func (mm Map) Select(path string) Map {
 		}
 	}
 
-	return mm.Find(path).(Map)
+	selmap = mm.Find(path).(Map)
+	return
 }
 
-// grab element specified by searchPath ie. '/elem1/subelem2/elem3'
+// grab element specified by searchPath in nested Map ie. '/elem1/subelem2/elem3'
 func (mm Map) Find(searchPath string) interface{} {
 
 	pathArr := strings.Split(searchPath, "/")
 	node := mm[pathArr[0]]
 	if node != nil {
 		for _, path := range pathArr[1:] {
-
 			if reflect.Map == reflect.TypeOf(node).Kind() {
 				node, _ = node.(Map)[path]
 			} else {
@@ -87,7 +124,7 @@ func (mm Map) Find(searchPath string) interface{} {
 }
 
 // merge map trees, choose to override or not from src
-func mergeKey(override bool, srcMap interface{}, dstMap interface{}, key interface{}, val interface{}) {
+func mergeMaps(override bool, srcMap interface{}, dstMap interface{}, key interface{}, val interface{}) {
 
 	if _, ok := dstMap.(Map)[key]; !ok {
 		dstMap.(Map)[key] = val
@@ -99,7 +136,7 @@ func mergeKey(override bool, srcMap interface{}, dstMap interface{}, key interfa
 			nm := srcMap.(Map)[key]
 			if "map" == reflect.TypeOf(nm).Kind().String() {
 				for k, v := range nm.(Map) {
-					mergeKey(override, srcMap.(Map)[key], dstMap.(Map)[key], k, v)
+					mergeMaps(override, srcMap.(Map)[key], dstMap.(Map)[key], k, v)
 				}
 			}
 			break
