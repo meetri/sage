@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/meetri/sage/commands"
-	"github.com/meetri/sage/config"
 	"github.com/urfave/cli"
-	"log"
-	"os"
+	//	"log"
+	//	"os"
 )
 
+/*
 var AppConfig config.Tree
 
 func init() {
@@ -19,7 +19,7 @@ func init() {
 		AppConfig.Select("main")
 	}
 
-}
+}*/
 
 func listContainers(*cli.Context) (err error) {
 	fmt.Printf("Listing your containers\n")

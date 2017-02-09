@@ -67,31 +67,61 @@ func (mm Map) Templatize(env Map) {
 	}
 }
 
+func (mm Map) mergeExtendedPath(file, service, pathkey string, parentEnv Map) Map {
+
+	var env Map
+
+	elem := mm.Find(file).(Map)
+
+	ex := Load(file)
+	es := ex.Find(service)
+
+	if g := ex.Find("_env"); g == nil {
+		env = parentEnv
+	} else {
+		env = g.(Map)
+		for k, v := range parentEnv {
+			env[k] = v
+		}
+	}
+
+	var elempath Map
+	if pathkey == "" {
+		elempath = elem
+	} else {
+		elem[pathkey] = make(Map)
+		elempath = elem[pathkey].(Map)
+	}
+
+	if es != nil {
+		eservice := es.(Map)
+		eservice.Templatize(env)
+		for k, v := range eservice {
+			mergeMaps(false, eservice, elempath, k, v)
+		}
+		mm.Templatize(env)
+
+		return eservice
+
+	}
+
+	return nil
+}
+
 //Select and Expand config's extended files
 func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 
 	elem := mm.Find(path).(Map)
 
-	e := elem.Find("extends")
-
-	var extends []Map
-	if reflect.TypeOf(e).Kind() == reflect.Slice {
-		extends = e.([]Map)
-	} else if reflect.TypeOf(e).Kind() == reflect.Map {
-		extends = append(extends, e.(Map))
-	}
-
-	for _, extender := range extends {
-
-		extend := extender.Find("file")
-		service := extender.Find("service")
-		path := extender.Find("path")
-
-	}
-
 	extend := elem.Find("extends/file")
 	service := elem.Find("extends/service")
 	pathkey := elem.Find("extends/path")
+
+	if extend != nil {
+
+		elem.mergeExtendedPath(extend.(string), service.(string), pathkey.(string), parentEnv)
+
+	}
 
 	env = make(Map)
 	for extend != nil {
@@ -126,6 +156,7 @@ func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 			extend = eservice.Find("extends/file")
 			service = eservice.Find("extends/service")
 			pathkey = eservice.Find("extends/path")
+
 		} else {
 			panic("failed loading " + extend.(string) + "::" + service.(string))
 		}
