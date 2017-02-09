@@ -2,11 +2,7 @@ package config
 
 import (
 	"errors"
-	//"fmt"
-	//"github.com/davecgh/go-spew/spew"
-	//"reflect"
-	//"regexp"
-	//"strings"
+	//	"sync"
 )
 
 type Tree struct {
@@ -14,6 +10,19 @@ type Tree struct {
 	Env  Map
 	Sel  Map
 }
+
+/*
+var instance *Tree
+var once sync.Once
+
+func getInstance() *Tree {
+
+	once.Do(func() {
+		instance = &Tree{}
+	})
+
+	return instance
+}*/
 
 func (t *Tree) SmartLoad(fn string) (err error) {
 

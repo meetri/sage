@@ -1,8 +1,7 @@
-package config
-
 /*
 	Load nested YAML app configuration
 */
+package config
 
 import (
 	//"fmt"
@@ -16,7 +15,16 @@ import (
 
 type Map map[interface{}]interface{}
 
-//Load RAW YAML data
+//type Map map[interface{}]interface{}
+
+//Export YAML
+func (mm Map) Save() []byte {
+	out, _ := yaml.Marshal(mm)
+	spew.Printf("%s", out)
+	return out
+}
+
+//LoadRAW YAML data
 func LoadRaw(data []byte) (mm Map, err error) {
 	err = yaml.Unmarshal([]byte(data), &mm)
 	return
@@ -31,7 +39,7 @@ func Load(fn string) (mm Map) {
 	}
 	mm, err = LoadRaw(raw)
 	if err != nil {
-		panic("problem parsing yaml data")
+		panic("YAML Parse Error:" + err.Error())
 	}
 	return
 
@@ -59,17 +67,27 @@ func (mm Map) Templatize(env Map) {
 	}
 }
 
-//Export YAML
-func (mm Map) Save() []byte {
-	out, _ := yaml.Marshal(mm)
-	spew.Printf("%s", out)
-	return out
-}
-
 //Select and Expand config's extended files
 func (mm Map) Select(path string, parentEnv Map) (selmap Map, env Map) {
 
 	elem := mm.Find(path).(Map)
+
+	e := elem.Find("extends")
+
+	var extends []Map
+	if reflect.TypeOf(e).Kind() == reflect.Slice {
+		extends = e.([]Map)
+	} else if reflect.TypeOf(e).Kind() == reflect.Map {
+		extends = append(extends, e.(Map))
+	}
+
+	for _, extender := range extends {
+
+		extend := extender.Find("file")
+		service := extender.Find("service")
+		path := extender.Find("path")
+
+	}
 
 	extend := elem.Find("extends/file")
 	service := elem.Find("extends/service")

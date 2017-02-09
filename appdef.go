@@ -2,8 +2,24 @@ package main
 
 import (
 	"fmt"
+	"github.com/meetri/sage/commands"
+	"github.com/meetri/sage/config"
 	"github.com/urfave/cli"
+	"log"
+	"os"
 )
+
+var AppConfig config.Tree
+
+func init() {
+
+	if err := AppConfig.SmartLoad(fmt.Sprintf("%s/.sage.yaml", os.Getenv("HOME"))); err != nil {
+		log.Fatalf("burp")
+	} else {
+		AppConfig.Select("main")
+	}
+
+}
 
 func listContainers(*cli.Context) (err error) {
 	fmt.Printf("Listing your containers\n")
@@ -22,10 +38,10 @@ func setupAppDefinitions() *cli.App {
 
 	app.Commands = []cli.Command{
 		{
-			Name:    "ls",
-			Aliases: []string{"l"},
+			Name:    "list",
+			Aliases: []string{"ls", "ps"},
 			Usage:   "list running containers",
-			Action:  listContainers,
+			Action:  commands.ListContainers,
 		},
 	}
 
