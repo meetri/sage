@@ -37,7 +37,8 @@ func ListContainers(c *cli.Context) (err error) {
 	timeout := hostlist.FindDefaultInt("timeout", 5)
 	hosts := hostlist.Find("hosts")
 
-	termlist := []string{"id", "hostalias", "name", "network", "address", "hostalias", "image", "command"}
+	//Allow overrides in ~/.sage/config.yml
+	termlist := []string{"id", "hostalias", "name", "network", "address", "image", "command"}
 	termmap := map[string]string{
 		"id":        "CONTAINER ID",
 		"hostalias": "HOST ALIAS",
