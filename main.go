@@ -1,46 +1,44 @@
 package main
 
 import (
-	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/meetri/sage/configurator"
-	"log"
+	"github.com/meetri/sage/commands"
+	"github.com/meetri/sage/core"
+	"github.com/urfave/cli"
+	//"log"
+	"os"
 )
 
-/*
-func setup() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatalf("Panic: %v", r)
-		}
-	}()
+func init() {
+	core.Config()
+}
 
-	app := setupAppDefinitions()
-	app.Run(os.Args)
+func setupAppDefinitions() *cli.App {
 
-	AppConfig.Data.Save()
-}*/
+	app := cli.NewApp()
 
-var configMap configurator.ConfigMap
+	app.Name = "sage"
+	app.Version = "0.1.0"
+	app.Usage = "sage [OPTIONS] [ARGUMENTS]"
+	app.Action = func(c *cli.Context) error {
+		return nil
+	}
+
+	commands.RegisterListCommands(app)
+
+	return app
+
+}
 
 func main() {
 
-	defer func() {
-		if r := recover(); r != nil {
-			log.Fatalf("Panic: %v", r)
-		}
-	}()
+	/*
+		defer func() {
+			if r := recover(); r != nil {
+				log.Fatalf("Panic: %v", r)
+			}
+		}()*/
 
-	//TODO: Get rid of this .. .debug mode
-	_ = fmt.Println
-	_ = spew.Dump
-
-	var err error
-	if configMap, err = configurator.Load("/Users/meetri/.sage.yaml"); err != nil {
-		log.Fatalf("ERROR:" + err.Error())
-	}
-
-	out, _ := configMap.Select("main")
-	fmt.Printf("%s", out.Export())
+	app := setupAppDefinitions()
+	app.Run(os.Args)
 
 }
