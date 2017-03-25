@@ -47,12 +47,7 @@ func TruncateContainerTerms(terms map[string]string) map[string]string {
 	}
 
 	termsc["id"] = Truncate(terms["id"], 16)
-	termsc["name"] = terms["name"]
 	termsc["command"] = Truncate(terms["command"], 32)
-	termsc["image"] = terms["image"]
-	termsc["address"] = terms["address"]
-	termsc["network"] = terms["network"]
-	termsc["orchestration"] = terms["orchestration"]
 
 	return termsc
 

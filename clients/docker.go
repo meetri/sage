@@ -105,7 +105,10 @@ func getContainerDetails(idx int, l []interface{}, hostdata interface{}, certglo
 			m := make(ymltree.Map)
 			m["container"] = containers
 			m["hostalias"] = hostalias
-			m["hostname"] = hostname
+			m["host"] = map[string]string{
+				"hostname": hostname,
+				"certpath": certpath,
+			}
 			m["cli"] = cli
 			l[idx] = m
 		} else {
