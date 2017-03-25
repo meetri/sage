@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	"log"
+	//"log"
 	"os"
 	"os/exec"
 )
@@ -33,14 +33,10 @@ func (doc *Docker) Connect(cid string) (err error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Printf("starting...")
 	err = cmd.Start()
 	if err == nil {
-		log.Printf("waiting...")
 		err = cmd.Wait()
 	}
-
-	log.Printf("done...")
 
 	return
 

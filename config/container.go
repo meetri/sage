@@ -2,9 +2,56 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"github.com/docker/docker/api/types"
+	"github.com/meetri/ymltree"
 	"strings"
 )
+
+func SearchContainers(args []string, ac []interface{}) (mh map[string]string, mc types.Container, err error) {
+
+	matched := 0
+	for _, cdata := range ac {
+
+		if cdata != nil {
+
+			containers := cdata.(ymltree.Map).Find("container")
+			hostdetails := cdata.(ymltree.Map).Find("host").(map[string]string)
+
+			for _, container := range containers.([]types.Container) {
+
+				terms := GetContainerTerms(container)
+
+				match := false
+
+				if len(args) == 0 {
+					match = true
+				} else {
+					for _, arg := range args {
+						if MatchTerms(arg, terms) {
+							match = true
+							break
+						}
+					}
+				}
+
+				if match {
+					matched++
+					mc = container
+					mh = hostdetails
+				}
+
+			}
+
+		}
+	}
+	if matched == 0 {
+		err = errors.New("no containers found")
+	}
+
+	return
+
+}
 
 func Truncate(str string, strlen int) string {
 
