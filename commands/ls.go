@@ -38,7 +38,7 @@ func ListContainers(c *cli.Context) (err error) {
 	hosts := hostlist.Find("hosts")
 
 	//Allow overrides in ~/.sage/config.yml
-	termlist := []string{"id", "hostalias", "name", "network", "address", "image", "command"}
+	termlist := []string{"id", "hostalias", "name", "network", "address", "image", "command", "status", "state", "ports"}
 	termmap := map[string]string{
 		"id":        "CONTAINER ID",
 		"hostalias": "HOST ALIAS",
@@ -47,6 +47,10 @@ func ListContainers(c *cli.Context) (err error) {
 		"address":   "ADDRESS",
 		"image":     "IMAGE",
 		"command":   "COMMAND",
+		"status":    "STATUS",
+		"state":     "STATE",
+		"ports":     "PORTS",
+		"labels":    "LABELS",
 	}
 
 	if hosts != nil {

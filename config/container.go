@@ -128,6 +128,8 @@ func GetContainerTerms(container types.Container) map[string]string {
 	terms["address"] = ipaddr
 	terms["network"] = container.HostConfig.NetworkMode
 	terms["orchestration"] = orch
+	terms["status"] = container.Status
+	terms["state"] = container.State
 
 	return terms
 }

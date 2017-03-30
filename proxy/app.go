@@ -22,6 +22,46 @@ func (doc *Docker) getConnectionArgs() []string {
 	return args
 }
 
+func (doc *Docker) Logs(cid string) (err error) {
+
+	args := doc.getConnectionArgs()
+	args = append(args, "logs", cid)
+
+	cmd := exec.Command("docker", args...)
+
+	//cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Start()
+	if err == nil {
+		err = cmd.Wait()
+	}
+
+	return
+
+}
+
+func (doc *Docker) Inspect(cid string) (err error) {
+
+	args := doc.getConnectionArgs()
+	args = append(args, "inspect", cid)
+
+	cmd := exec.Command("docker", args...)
+
+	//cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err = cmd.Start()
+	if err == nil {
+		err = cmd.Wait()
+	}
+
+	return
+
+}
+
 func (doc *Docker) Connect(cid string) (err error) {
 
 	args := doc.getConnectionArgs()

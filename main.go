@@ -25,6 +25,8 @@ func setupAppDefinitions() *cli.App {
 
 	commands.RegisterListCommands(app)
 	commands.RegisterConnectCommands(app)
+	commands.RegisterLogsCommand(app)
+	commands.RegisterInspectCommand(app)
 
 	return app
 
