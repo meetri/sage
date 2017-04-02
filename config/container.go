@@ -111,7 +111,7 @@ func GetContainerTerms(container types.Container) map[string]string {
 	}
 
 	name := container.Names[0][1:]
-	orch := ""
+	orch := "docker"
 	for k, v := range container.Labels {
 		if k == "MESOS_TASK_ID" {
 			name = strings.Split(v, ".")[0]

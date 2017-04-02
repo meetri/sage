@@ -1,90 +1,43 @@
 package proxy
 
 import (
-	//"log"
-	"os"
-	"os/exec"
+	"errors"
+	"fmt"
+	"github.com/docker/docker/api/types"
 )
 
-type Docker struct {
-	host map[string]string
+type OrchestrationProxyFactory func(conf map[string]string) (OrchestrationProxy, error)
+
+type OrchestrationProxy interface {
+	Logs(cid string, args map[string]interface{}) (err error)
+	Restart(cid string) (err error)
+	Stop(cid string) (err error)
+	Start(cid string) (err error)
+	Remove(cid string) (err error)
+	GetId(container types.Container) string
+	GetId2(container types.Container) string
 }
 
-func (doc *Docker) getConnectionArgs() []string {
-	var args []string
-	args = append(args, "-H", doc.host["hostname"])
-	if len(doc.host["certpath"]) > 0 {
-		args = append(args, "--tlscacert", doc.host["certpath"]+"/ca.pem")
-		args = append(args, "--tlscert", doc.host["certpath"]+"/cert.pem")
-		args = append(args, "--tlskey", doc.host["certpath"]+"/key.pem")
-		args = append(args, "--tlsverify")
+var (
+	orchestrationProxyList = make(map[string]OrchestrationProxyFactory)
+)
+
+func init() {
+	Register("docker", NewDockerProxy)
+	Register("mesos", NewDCOSProxy)
+}
+
+func Register(name string, prox OrchestrationProxyFactory) {
+
+	if _, ok := orchestrationProxyList[name]; !ok {
+		orchestrationProxyList[name] = prox
 	}
-	return args
 }
 
-func (doc *Docker) Logs(cid string) (err error) {
-
-	args := doc.getConnectionArgs()
-	args = append(args, "logs", cid)
-
-	cmd := exec.Command("docker", args...)
-
-	//cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err == nil {
-		err = cmd.Wait()
+func Create(name string, conf map[string]string) (OrchestrationProxy, error) {
+	oProxy, ok := orchestrationProxyList[name]
+	if ok {
+		return oProxy(conf)
 	}
-
-	return
-
-}
-
-func (doc *Docker) Inspect(cid string) (err error) {
-
-	args := doc.getConnectionArgs()
-	args = append(args, "inspect", cid)
-
-	cmd := exec.Command("docker", args...)
-
-	//cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err == nil {
-		err = cmd.Wait()
-	}
-
-	return
-
-}
-
-func (doc *Docker) Connect(cid string) (err error) {
-
-	args := doc.getConnectionArgs()
-	args = append(args, "exec", "-it", cid, "/bin/sh")
-
-	cmd := exec.Command("docker", args...)
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err == nil {
-		err = cmd.Wait()
-	}
-
-	return
-
-}
-
-func CreateDockerCli(config map[string]string) *Docker {
-	var cli Docker
-	cli.host = config
-
-	return &cli
+	return nil, errors.New(fmt.Sprintf("%s proxy has not been registered", name))
 }

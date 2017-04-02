@@ -20,7 +20,7 @@ func RegisterLogsCommand(app *cli.App) {
 			cli.BoolFlag{Name: "details", Usage: "show all containers"},
 			cli.BoolFlag{Name: "f,follow"},
 			cli.StringFlag{Name: "since", Usage: "Show logs since timestamp"},
-			cli.IntFlag{Name: "tail", Usage: "Number of lines t o show from the end of the logs ( default \"all\")"},
+			cli.StringFlag{Name: "tail", Usage: "Number of lines t o show from the end of the logs ( default \"all\")"},
 			cli.BoolFlag{Name: "t,timestamps", Usage: "Show timestamps"},
 		},
 		Action: LogContainer,
@@ -41,7 +41,10 @@ func LogContainer(c *cli.Context) (err error) {
 
 		if err == nil {
 			dockercli := proxy.CreateDockerCli(mh)
-			dockercli.Logs(mc.ID)
+			args := make(map[string]interface{})
+			args["follow"] = c.Bool("follow")
+			args["tail"] = c.String("tail")
+			dockercli.Logs(mc.ID, args)
 		} else {
 			fmt.Printf("%s", err)
 		}

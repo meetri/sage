@@ -22,11 +22,24 @@ func setupAppDefinitions() *cli.App {
 	app.Action = func(c *cli.Context) error {
 		return nil
 	}
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "host",
+			Value:       "all",
+			Usage:       "run on selected hosts",
+			Destination: &commands.SelectedHosts,
+		},
+	}
 
 	commands.RegisterListCommands(app)
 	commands.RegisterConnectCommands(app)
 	commands.RegisterLogsCommand(app)
 	commands.RegisterInspectCommand(app)
+	commands.RegisterDockerCommand(app)
+	commands.RegisterRestartCommand(app)
+	commands.RegisterStopCommand(app)
+	commands.RegisterStartCommand(app)
+	commands.RegisterRemoveCommand(app)
 
 	return app
 
