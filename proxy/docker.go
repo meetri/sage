@@ -39,28 +39,12 @@ func (doc *Docker) Logs(cid string, args map[string]interface{}) (err error) {
 		xargs = append(xargs, "--tail", tail)
 	}
 
-	cmd := exec.Command("docker", xargs...)
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err == nil {
-		err = cmd.Wait()
+	docker_cmd := "docker"
+	if _, ok := doc.host["binary"]; ok {
+		docker_cmd = doc.host["binary"]
 	}
+	cmd := exec.Command(docker_cmd, xargs...)
 
-	return
-
-}
-
-func (doc *Docker) Inspect(cid string) (err error) {
-
-	args := doc.getConnectionArgs()
-	args = append(args, "inspect", cid)
-
-	cmd := exec.Command("docker", args...)
-
-	//cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -78,9 +62,12 @@ func (doc *Docker) Proxy(xargs ...string) (err error) {
 	args := doc.getConnectionArgs()
 	args = append(args, xargs...)
 
-	//fmt.Printf("Proxy args: %v", args)
+	docker_cmd := "docker"
+	if _, ok := doc.host["binary"]; ok {
+		docker_cmd = doc.host["binary"]
+	}
 
-	cmd := exec.Command("docker", args...)
+	cmd := exec.Command(docker_cmd, args...)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -108,6 +95,10 @@ func (doc *Docker) Start(cid string) (err error) {
 
 func (doc *Docker) Remove(cid string) (err error) {
 	return doc.Proxy("rm", cid)
+}
+
+func (doc *Docker) Inspect(cid string) (err error) {
+	return doc.Proxy("inspect", cid)
 }
 
 func (doc *Docker) Connect(cid string) (err error) {

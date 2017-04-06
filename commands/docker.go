@@ -38,6 +38,7 @@ func DockerProxy(c *cli.Context) (err error) {
 				proxconf := make(map[string]string)
 				proxconf["hostname"] = host.(ymltree.Map).FindDefault("host", "")
 				proxconf["certpath"] = host.(ymltree.Map).FindDefault("certpath", certpath_global)
+				proxconf["binary"] = host.(ymltree.Map).FindDefault("binary", "docker")
 				docprox := proxy.CreateDockerCli(proxconf)
 				docprox.Proxy(c.Args()...)
 			}
