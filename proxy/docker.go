@@ -29,7 +29,7 @@ func (doc *Docker) Logs(cid string, args map[string]interface{}) (err error) {
 	tail := args["tail"].(string)
 
 	xargs := doc.getConnectionArgs()
-	xargs = append(xargs, "logs", cid)
+	xargs = append(xargs, "logs")
 
 	if follow {
 		xargs = append(xargs, "-f")
@@ -39,10 +39,8 @@ func (doc *Docker) Logs(cid string, args map[string]interface{}) (err error) {
 		xargs = append(xargs, "--tail", tail)
 	}
 
-	docker_cmd := "docker"
-	if _, ok := doc.host["binary"]; ok {
-		docker_cmd = doc.host["binary"]
-	}
+	xargs = append(xargs, cid)
+	docker_cmd := doc.host["binary"]
 	cmd := exec.Command(docker_cmd, xargs...)
 
 	cmd.Stdout = os.Stdout
@@ -62,11 +60,7 @@ func (doc *Docker) Proxy(xargs ...string) (err error) {
 	args := doc.getConnectionArgs()
 	args = append(args, xargs...)
 
-	docker_cmd := "docker"
-	if _, ok := doc.host["binary"]; ok {
-		docker_cmd = doc.host["binary"]
-	}
-
+	docker_cmd := doc.host["binary"]
 	cmd := exec.Command(docker_cmd, args...)
 
 	cmd.Stdout = os.Stdout
@@ -97,6 +91,14 @@ func (doc *Docker) Remove(cid string) (err error) {
 	return doc.Proxy("rm", cid)
 }
 
+func (doc *Docker) Destroy(cid string) (err error) {
+	err = doc.Proxy("stop", cid)
+	if err == nil {
+		err = doc.Proxy("rm", cid)
+	}
+	return
+}
+
 func (doc *Docker) Inspect(cid string) (err error) {
 	return doc.Proxy("inspect", cid)
 }
@@ -106,7 +108,7 @@ func (doc *Docker) Connect(cid string) (err error) {
 	args := doc.getConnectionArgs()
 	args = append(args, "exec", "-it", cid, "/bin/sh")
 
-	cmd := exec.Command("docker", args...)
+	cmd := exec.Command(doc.host["binary"], args...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

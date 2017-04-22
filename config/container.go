@@ -46,7 +46,9 @@ func SearchContainers(args []string, ac []interface{}) (mh map[string]string, mc
 		}
 	}
 	if matched == 0 {
-		err = errors.New("no containers found")
+		err = errors.New("no containers found\n")
+	} else if matched > 1 {
+		err = errors.New("found multiple containers that matched query\n")
 	}
 
 	return

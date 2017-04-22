@@ -82,6 +82,7 @@ func getContainerDetails(idx int, l []interface{}, hostdata interface{}, certglo
 	var certpath string
 	var dockerver string
 	var timeout_seconds int
+	dockerbin := "docker"
 
 	defer func() {
 		<-sem
@@ -97,6 +98,7 @@ func getContainerDetails(idx int, l []interface{}, hostdata interface{}, certglo
 		hostalias = hostdata.(ymltree.Map).FindDefault("alias", hostname)
 		certpath = hostdata.(ymltree.Map).FindDefault("certpath", certglobal)
 		timeout_seconds = hostdata.(ymltree.Map).FindDefaultInt("timeout", timeout)
+		dockerbin = hostdata.(ymltree.Map).FindDefault("binary", dockerbin)
 	}
 
 	cli, err := NewDockerClient(hostname, certpath, dockerver, timeout_seconds)
@@ -109,6 +111,7 @@ func getContainerDetails(idx int, l []interface{}, hostdata interface{}, certglo
 			m["host"] = map[string]string{
 				"hostname": hostname,
 				"certpath": certpath,
+				"binary":   dockerbin,
 			}
 			m["cli"] = cli
 			l[idx] = m

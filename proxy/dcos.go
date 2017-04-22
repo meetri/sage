@@ -27,6 +27,10 @@ func (doc *DCOS) Remove(cid string) (err error) {
 	return nil
 }
 
+func (doc *DCOS) Destroy(cid string) (err error) {
+	return doc.Proxy("marathon", "app", "kill", cid)
+}
+
 func (doc *DCOS) Start(cid string) (err error) {
 	return doc.Proxy("marathon", "app", "start", cid)
 }

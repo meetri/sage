@@ -14,6 +14,7 @@ type OrchestrationProxy interface {
 	Stop(cid string) (err error)
 	Start(cid string) (err error)
 	Remove(cid string) (err error)
+	Destroy(cid string) (err error)
 	GetId(container types.Container) string
 	GetId2(container types.Container) string
 }

@@ -40,6 +40,7 @@ func setupAppDefinitions() *cli.App {
 	commands.RegisterStopCommand(app)
 	commands.RegisterStartCommand(app)
 	commands.RegisterRemoveCommand(app)
+	commands.RegisterDestroyCommand(app)
 
 	return app
 
