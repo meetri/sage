@@ -2,9 +2,8 @@
 
 ### Features
 - Aggregate all your docker containers from multiple hosts
-- perform operations on containers based on detected orchestration platform
-  utilizes `dcos` for DCOS, ( `kubectl` for Kubernetes ), and `docker` for docker 
 - Easily connect, view logs, stop, start, and restart containers on any host
+- gather important container naming details based on detected orchestration platform used
 
 ### Example Host Configuration ~/.sage/hosts.yml
 ```
