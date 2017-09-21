@@ -29,15 +29,21 @@ func DestroyContainer(c *cli.Context) (err error) {
 
 	if hosts != nil {
 		ac := clients.GetAllContainers(hosts.([]interface{}), certpath_global, timeout)
-		mh, mc, err := config.SearchContainers(c.Args(), ac)
+		sr, err := config.SearchContainersNew(c.Args(), ac)
 
 		if err == nil {
-			_ = mh
-			orch, err := proxy.Create("docker", mh)
-			if err == nil {
-				orch.Destroy(orch.GetId(mc))
-			} else {
-				fmt.Printf("%s\n", err)
+			for _, result := range sr {
+				r := config.SearchResults(result)
+				if r.IsMatchedOne() {
+					orch, err := proxy.Create("docker", r.Hosts())
+					if err == nil {
+						orch.Destroy(orch.GetId(r.Containers()))
+					} else {
+						fmt.Printf("%s\n", err)
+					}
+				} else {
+					fmt.Printf("found %d matches", r.Matches())
+				}
 			}
 
 		} else {

@@ -116,7 +116,7 @@ func getContainerDetails(idx int, l []interface{}, hostdata interface{}, certglo
 			m["cli"] = cli
 			l[idx] = m
 		} else {
-			log.Printf("failed to get container details")
+			log.Printf("failed to get container details: ", err)
 		}
 	} else {
 		log.Printf("failed to create client for %s", hostname)

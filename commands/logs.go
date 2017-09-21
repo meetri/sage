@@ -40,11 +40,15 @@ func LogContainer(c *cli.Context) (err error) {
 		mh, mc, err := config.SearchContainers(c.Args(), ac)
 
 		if err == nil {
-			dockercli := proxy.CreateDockerCli(mh)
-			args := make(map[string]interface{})
-			args["follow"] = c.Bool("follow")
-			args["tail"] = c.String("tail")
-			dockercli.Logs(mc.ID, args)
+			orch, err := proxy.Create("docker", mh)
+			if err == nil {
+				args := make(map[string]interface{})
+				args["follow"] = c.Bool("follow")
+				args["tail"] = c.String("tail")
+				orch.Logs(mc.ID, args)
+			} else {
+				fmt.Printf("%s\n", err)
+			}
 		} else {
 			fmt.Printf("%s", err)
 		}

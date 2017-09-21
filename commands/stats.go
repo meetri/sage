@@ -10,17 +10,18 @@ import (
 	"github.com/urfave/cli"
 )
 
-func RegisterStopCommand(app *cli.App) {
+func RegisterStatsCommand(app *cli.App) {
 
 	app.Commands = append(app.Commands, cli.Command{
-		Name:   "stop",
-		Usage:  "stop container",
-		Action: StopContainer,
+		Name:    "stats",
+		Aliases: []string{"stats"},
+		Usage:   "get container stats",
+		Action:  StatsContainer,
 	})
 
 }
 
-func StopContainer(c *cli.Context) (err error) {
+func StatsContainer(c *cli.Context) (err error) {
 
 	hostlist := core.Config().Hosts()
 	certpath_global := hostlist.FindDefault("certpath", "")
@@ -29,23 +30,11 @@ func StopContainer(c *cli.Context) (err error) {
 
 	if hosts != nil {
 		ac := clients.GetAllContainers(hosts.([]interface{}), certpath_global, timeout)
-		sr, err := config.SearchContainersNew(c.Args(), ac)
+		mh, mc, err := config.SearchContainers(c.Args(), ac)
 
 		if err == nil {
-			for _, result := range sr {
-				r := config.SearchResults(result)
-				if r.IsMatchedOne() {
-					orch, err := proxy.Create("docker", r.Hosts())
-					if err == nil {
-						orch.Stop(orch.GetId(r.Containers()))
-					} else {
-						fmt.Printf("%s\n", err)
-					}
-				} else {
-					fmt.Printf("found %d matches", r.Matches())
-				}
-			}
-
+			dockercli := proxy.CreateDockerCli(mh)
+			dockercli.Stats(mc.Names[0])
 		} else {
 			fmt.Printf("%s", err)
 		}

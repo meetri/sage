@@ -1,0 +1,6 @@
+create a directory in the root of your $HOME  directory
+copy the following configs
+update the ~/sage/hosts.yaml config to add your hosts. Use the sample as a template
+
+mkdir ~/.sage
+cp * ~/.sage

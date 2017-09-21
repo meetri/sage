@@ -17,7 +17,7 @@ func setupAppDefinitions() *cli.App {
 	app := cli.NewApp()
 
 	app.Name = "sage"
-	app.Version = "0.1.0"
+	app.Version = "0.1.2"
 	app.Usage = "sage [OPTIONS] [ARGUMENTS]"
 	app.Action = func(c *cli.Context) error {
 		return nil
@@ -41,6 +41,8 @@ func setupAppDefinitions() *cli.App {
 	commands.RegisterStartCommand(app)
 	commands.RegisterRemoveCommand(app)
 	commands.RegisterDestroyCommand(app)
+	commands.RegisterEnvCommand(app)
+	commands.RegisterStatsCommand(app)
 
 	return app
 

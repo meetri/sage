@@ -75,6 +75,10 @@ func (doc *Docker) Proxy(xargs ...string) (err error) {
 
 }
 
+func (doc *Docker) Stats(cid string) (err error) {
+	return doc.Proxy("stats", cid)
+}
+
 func (doc *Docker) Restart(cid string) (err error) {
 	return doc.Proxy("restart", cid)
 }

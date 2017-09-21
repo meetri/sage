@@ -8,6 +8,7 @@ import (
 )
 
 type DCOS struct {
+	*Docker
 	host map[string]string
 }
 

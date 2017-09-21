@@ -8,6 +8,85 @@ import (
 	"strings"
 )
 
+type SearchResults struct {
+	matched       int
+	containerList types.Container
+	hostdetails   map[string]string
+}
+
+func (s SearchResults) IsMatched() bool {
+	return s.matched > 0
+}
+
+func (s SearchResults) Matches() int {
+	return s.matched
+}
+
+func (s SearchResults) IsMatchedOne() bool {
+	return s.matched == 1
+}
+
+func (s SearchResults) Containers() types.Container {
+	return s.containerList
+}
+
+func (s SearchResults) Hosts() map[string]string {
+	return s.hostdetails
+}
+
+func (s *SearchResults) setMatch(c types.Container, h map[string]string) {
+	s.matched++
+	s.containerList = c
+	s.hostdetails = h
+}
+
+func SearchContainersNew(args []string, ac []interface{}) (matchedList []SearchResults, err error) {
+
+	mlen := 1
+	if len(args) > 0 {
+		mlen = len(args)
+	}
+	//matchedList := make([]SearchResults, mlen)
+	matchedList = make([]SearchResults, mlen)
+
+	total_matches := 0
+	for _, cdata := range ac {
+
+		if cdata != nil {
+
+			containers := cdata.(ymltree.Map).Find("container")
+			hostdetails := cdata.(ymltree.Map).Find("host").(map[string]string)
+
+			for _, container := range containers.([]types.Container) {
+
+				terms := GetContainerTerms(container)
+
+				if len(args) == 0 {
+					matchedList[0].setMatch(container, hostdetails)
+					total_matches++
+				} else {
+					for idx, arg := range args {
+						if MatchTerms(arg, terms) {
+							matchedList[idx].setMatch(container, hostdetails)
+							total_matches++
+							break
+						}
+					}
+				}
+
+			}
+
+		}
+	}
+
+	if total_matches == 0 {
+		err = errors.New("no containers found\n")
+	}
+
+	return
+
+}
+
 func SearchContainers(args []string, ac []interface{}) (mh map[string]string, mc types.Container, err error) {
 
 	matched := 0
@@ -104,12 +183,12 @@ func TruncateContainerTerms(terms map[string]string) map[string]string {
 
 func GetContainerTerms(container types.Container) map[string]string {
 
-	networkMode := container.HostConfig.NetworkMode
 	ipaddr := ""
-	if container.NetworkSettings.Networks[networkMode] != nil {
-		ipaddr = container.NetworkSettings.Networks[networkMode].IPAddress
-	} else if container.NetworkSettings.Networks["bridge"] != nil {
-		ipaddr = container.NetworkSettings.Networks["bridge"].IPAddress
+	networkname := ""
+	for netname, network := range container.NetworkSettings.Networks {
+		ipaddr = network.IPAddress
+		networkname = netname
+		break
 	}
 
 	name := container.Names[0][1:]
@@ -118,6 +197,10 @@ func GetContainerTerms(container types.Container) map[string]string {
 		if k == "MESOS_TASK_ID" {
 			name = strings.Split(v, ".")[0]
 			orch = "mesos"
+			break
+		} else if k == "com.docker.swarm.task.name" {
+			name = strings.Split(v, ".")[0] + "." + strings.Split(v, ".")[1]
+			orch = "swarm"
 			break
 		}
 	}
@@ -128,7 +211,7 @@ func GetContainerTerms(container types.Container) map[string]string {
 	terms["command"] = container.Command
 	terms["image"] = container.Image
 	terms["address"] = ipaddr
-	terms["network"] = container.HostConfig.NetworkMode
+	terms["network"] = networkname
 	terms["orchestration"] = orch
 	terms["status"] = container.Status
 	terms["state"] = container.State

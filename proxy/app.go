@@ -26,6 +26,7 @@ var (
 func init() {
 	Register("docker", NewDockerProxy)
 	Register("mesos", NewDCOSProxy)
+	Register("swarm", NewSwarmProxy)
 }
 
 func Register(name string, prox OrchestrationProxyFactory) {

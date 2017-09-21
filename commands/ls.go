@@ -38,20 +38,26 @@ func ListContainers(c *cli.Context) (err error) {
 	hosts := hostlist.Find("hosts")
 
 	//Allow overrides in ~/.sage/config.yml
-	//termlist := []string{"id", "hostalias", "name", "network", "address", "image", "command", "status", "state", "ports"}
-	termlist := []string{"id", "hostalias", "name", "network", "image", "status"}
+	var termlist []string
+	if c.Bool("quiet") {
+		termlist = []string{"id"}
+	} else {
+		//termlist := []string{"id", "hostalias", "name", "orchestration", "network", "address", "image", "command", "status", "state", "ports"}
+		termlist = []string{"id", "hostalias", "name", "network", "image", "status"}
+	}
 	termmap := map[string]string{
-		"id":        "CONTAINER ID",
-		"hostalias": "HOST ALIAS",
-		"name":      "NAME",
-		"network":   "NETWORK",
-		"address":   "ADDRESS",
-		"image":     "IMAGE",
-		"command":   "COMMAND",
-		"status":    "STATUS",
-		"state":     "STATE",
-		"ports":     "PORTS",
-		"labels":    "LABELS",
+		"id":            "CONTAINER ID",
+		"hostalias":     "HOST ALIAS",
+		"name":          "NAME",
+		"network":       "NETWORK",
+		"address":       "ADDRESS",
+		"image":         "IMAGE",
+		"command":       "COMMAND",
+		"status":        "STATUS",
+		"state":         "STATE",
+		"ports":         "PORTS",
+		"labels":        "LABELS",
+		"orchestration": "ORCHESTRATION",
 	}
 
 	if hosts != nil {
@@ -59,7 +65,7 @@ func ListContainers(c *cli.Context) (err error) {
 
 		w := tabwriter.NewWriter(os.Stdout, 1, 1, 4, ' ', 00)
 
-		if !c.Bool("dump") {
+		if !c.Bool("dump") && !c.Bool("quiet") {
 			fmt.Fprintf(w, config.WriteTerms(termmap, termlist))
 		}
 
