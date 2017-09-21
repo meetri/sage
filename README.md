@@ -8,15 +8,19 @@
 
 ### Example Host Configuration ~/.sage/hosts.yml
 ```
-name: DCOS Cluster 1
+name: MySwarm
 alias: dcos1
-certpath: /projects/docker/certs
+active_cluster: all
+certpath: /Users/woiam/.sage/keys/dcos/
+clusters:
+    - { name: "cloud1", certpath: "/Users/woiam/.sage/keys/dcos" }
+    - { name: "local", certpath: "" }
 hosts:
-  - { alias: "mesos-master", host: "tcp://node1.mydockerhost.com:2376" }
-  - { alias: "mesos-node2", host: "tcp://node2.mydockerhost.com:2376" }
-  - { alias: "mesos-node3", host: "tcp://node3.mydockerhost.com:2376" }
-  - { alias: "mesos-node4", host: "tcp://node4.mydockerhost.com:2376" }
-  - { alias: "local", host: "tcp://192.168.59.104:2376", certpath: "" }
+  - { alias: "swarm-node1", cluster: "cloud1", host: "tcp://mesos-node1.mycloud.com:2376" }
+  - { alias: "swarm-node2", cluster: "cloud1", host: "tcp://mesos-node6.mycloud.com:2376" }
+  - { alias: "swarm-node3", cluster: "cloud1", host: "tcp://mesos-node7.mycloud.com:2376" }
+  - { alias: "local", host: "tcp://192.168.59.104:2376" }
+  - { alias: "pi", host: "tcp://raspberry.pi:2376","binary":"/Users/whiam/.dvm/bin/docker/1.11.0/docker","certpath":"" }
 ```
 
 
@@ -29,7 +33,7 @@ USAGE:
    sage [global options] command [command options] [arguments...]
 
 VERSION:
-   0.1.0
+   0.1.2
 
 COMMANDS:
      list, ls, ps         list running containers
@@ -41,6 +45,9 @@ COMMANDS:
      stop                 stop container
      start                start container
      remove, rm           remove container
+     destroy              stop and remove container
+     env                  env -s host1
+     stats, stats         get container stats
      help, h              Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
