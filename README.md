@@ -12,6 +12,7 @@ name: MySwarm
 alias: dcos1
 active_cluster: all
 certpath: /Users/woiam/.sage/keys/dcos/
+# cluster config options coming in next version...
 clusters:
     - { name: "cloud1", certpath: "/Users/woiam/.sage/keys/dcos" }
     - { name: "local", certpath: "" }
@@ -21,6 +22,22 @@ hosts:
   - { alias: "swarm-node3", cluster: "cloud1", host: "tcp://mesos-node7.mycloud.com:2376" }
   - { alias: "local", host: "tcp://192.168.59.104:2376" }
   - { alias: "pi", host: "tcp://raspberry.pi:2376","binary":"/Users/whiam/.dvm/bin/docker/1.11.0/docker","certpath":"" }
+```
+
+### Example Configuration ~/.sage/config.yml
+define which fields get shown during a [sage ps] command
+```
+fields:
+  - id
+  - hostalias
+  - orchestration
+  - name
+  - network
+  - address
+  - image
+  - command
+  - ports
+  - labels
 ```
 
 
